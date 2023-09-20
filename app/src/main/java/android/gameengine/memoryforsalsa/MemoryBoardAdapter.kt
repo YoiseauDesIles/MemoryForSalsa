@@ -2,12 +2,15 @@ package android.gameengine.memoryforsalsa
 
 import android.content.Context
 import android.gameengine.memoryforsalsa.models.BoardSize
+import android.gameengine.memoryforsalsa.models.MemoryCard
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.max
 import kotlin.math.min
@@ -16,13 +19,19 @@ import kotlin.math.min
 class MemoryBoardAdapter(
     private val context: Context,
     private val boardSize: BoardSize,
-    private val cardImages: List<Int>
-) : RecyclerView.Adapter<MemoryBoardAdapter.ViewHolder>() {
+    private val cards: List<MemoryCard>,
+    private val cardClickListener: CardClickListener
+) :
+    RecyclerView.Adapter<MemoryBoardAdapter.ViewHolder>() {
 
 
     companion object{
         private const val MARGIN_SIZE = 10
         private const val TAG = "MemoryBoardAdapter"
+    }
+
+    interface CardClickListener {
+        fun onCardClicked(position: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -51,9 +60,16 @@ class MemoryBoardAdapter(
 
         fun bind(position: Int) {
 
-            imageButton.setImageResource(cardImages[position])
+            val currentMemoryCard = cards[position]
+            imageButton.setImageResource(if (currentMemoryCard.isFaceUp) currentMemoryCard.identifier else R.drawable.ic_launcher_background)
+
+            imageButton.alpha = if (currentMemoryCard.isMatched) .4f else 1.0f
+            val colorStateList = if (currentMemoryCard.isMatched) ContextCompat.getColorStateList(context, R.color.color_gray) else null
+            ViewCompat.setBackgroundTintList(imageButton, colorStateList)
+
             imageButton.setOnClickListener{
                 Log.i(TAG, "Clicked on position $position")
+                cardClickListener.onCardClicked(position)
             }
         }
 
